@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diana-sovereign-hacker"
+version = "1.0.0"
+description = "D.I.A.N.A. OS - Hacker Tier (Single-Node)"
+requires-python = ">=3.10"
+dependencies = [
+    "faster-whisper",
+    "mss",
+    "opencv-python-headless",
+    "pyautogui",
+    "pytesseract",
+    "requests",
+    "python-telegram-bot",
+    "cryptography",
+    "pydantic"
+]
+
+[tool.nuitka]
+mode = "standalone"
+onefile = true
+lto = "yes"
+remove-output = true
+include-data-dir = "secure_packs=secure_packs"

@@ -1,0 +1,31 @@
+# Environment & Secrets
+.env
+.env.local
+*.pem
+*.key
+*.lock.secret
+
+# Local Operational Memory & Geometries
+*.db
+*.sqlite
+*.sqlite3
+semantic_ledger*
+genesis_geometries*
+/data/logs/
+/var/log/diana/
+*.log
+
+# Raw Source Axioms & Testing Traces
+/data/raw_axioms/
+/tests/fixtures/
+/scratch/
+failed_geometries/
+
+# Python & Build Artifacts
+__pycache__/
+*.pyc
+/build/
+/dist/
+*.tar.gz
+*.bin
+.pytest_cache/

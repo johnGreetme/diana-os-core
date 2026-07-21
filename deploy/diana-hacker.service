@@ -1,0 +1,24 @@
+[Unit]
+Description=D.I.A.N.A. OS - Sovereign Hacker Daemon
+After=network.target graphical.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/kytin/diana
+ExecStart=/opt/kytin/diana/diana_hacker
+Restart=always
+RestartSec=5
+
+# GUI and Display Variables needed for PyAutoGUI & OCR
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/diana/.Xauthority
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+# Logging
+StandardOutput=append:/var/log/diana/daemon.log
+StandardError=append:/var/log/diana/error.log
+
+[Install]
+WantedBy=multi-user.target
