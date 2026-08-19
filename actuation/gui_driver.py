@@ -17,7 +17,7 @@ class VisualActuator:
         pass
 
     def click_text_target(self, target_text: str, double_click: bool = False) -> str:
-        """Locates target_text on screen using pytesseract OCR and clicks its center."""
+        """Locates target_text on screen using Tesseract OCR (Linux Native) and clicks its center."""
         try:
             return asyncio.run(self._async_click_text_target(target_text, double_click))
         except Exception as e:
@@ -42,14 +42,14 @@ class VisualActuator:
                         x, y, w, h = data['left'][i], data['top'][i], data['width'][i], data['height'][i]
                         match_rect = {'x': x, 'y': y, 'width': w, 'height': h}
                         break
-
+            
             if not match_rect:
                 return f"[GUI ERROR] Target text '{target_text}' was not found on screen."
-
+                
             # 4. Calculate geometric center coordinates
             center_x = int(match_rect['x'] + (match_rect['width'] / 2))
             center_y = int(match_rect['y'] + (match_rect['height'] / 2))
-
+            
             # 5. Take physical control of mouse
             pyautogui.moveTo(center_x, center_y, duration=0.2, tween=pyautogui.easeOutQuad)
             if double_click:
@@ -59,7 +59,35 @@ class VisualActuator:
                 
             # Brief sleep for screen state changes to settle
             time.sleep(0.5)
-
+            
             return f"[GUI SUCCESS] Clicked '{target_text}' at coordinates ({center_x}, {center_y})."
-        
+            
         return await asyncio.to_thread(_find_and_click)
+
+    def type_text(self, text: str) -> str:
+        """Types the specified text via the keyboard."""
+        try:
+            pyautogui.write(text, interval=0.05)
+            time.sleep(0.5)
+            return f"[GUI SUCCESS] Typed text: '{text}'"
+        except Exception as e:
+            return f"[GUI ERROR] Failed to type text: {str(e)}"
+
+    def press_key(self, key: str) -> str:
+        """Presses a specific keyboard key (e.g., 'enter', 'tab', 'pagedown')."""
+        try:
+            pyautogui.press(key)
+            time.sleep(0.5)
+            return f"[GUI SUCCESS] Pressed key: '{key}'"
+        except Exception as e:
+            return f"[GUI ERROR] Failed to press key '{key}': {str(e)}"
+
+    def scroll(self, clicks: int) -> str:
+        """Scrolls the mouse wheel. Positive clicks scroll up, negative scroll down."""
+        try:
+            pyautogui.scroll(clicks)
+            time.sleep(0.5)
+            direction = "up" if clicks > 0 else "down"
+            return f"[GUI SUCCESS] Scrolled {direction} by {abs(clicks)} clicks"
+        except Exception as e:
+            return f"[GUI ERROR] Failed to scroll: {str(e)}"

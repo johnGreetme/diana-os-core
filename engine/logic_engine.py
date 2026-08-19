@@ -31,7 +31,7 @@ GREETME_50 = {
     "FUTURE_COMMITMENT", "PENDING_RESOLUTION", "ENCRYPTED_PAYLOAD"
 }
 
-# The fields in Resin DSL JSON schemas that represent logic or actions, 
+# The fields in Deterministic DSL JSON schemas that represent logic or actions, 
 # which must be strictly bound to the 50 atoms.
 INSTRUCTION_KEYS = {
     "action", "operator", "primitive", "condition", 

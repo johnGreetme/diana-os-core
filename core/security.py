@@ -1,39 +1,58 @@
 import os
 import json
 import logging
-from cryptography.fernet import Fernet
-from typing import Dict, Any
+import hashlib
+import sys
 
 logger = logging.getLogger(__name__)
 
 class SecurityEnclave:
     def __init__(self):
-        # Master key could be injected at build time, or read from a secured env block
-        # For offline node-locked deployment, the key should ideally be derived from hardware lock
-        self.master_key = os.environ.get("DIANA_MASTER_KEY", b"")
-        self._fernet = Fernet(self.master_key) if self.master_key else None
+        pass
 
-    def load_encrypted_pack(self, pack_path: str) -> Dict[str, Any]:
-        """Loads and decrypts a .enc pack strictly into system RAM."""
-        if not self._fernet:
-            logger.error("No DIANA_MASTER_KEY configured. Cannot decrypt axioms.")
-            raise ValueError("Missing master decryption key.")
-            
-        if not os.path.exists(pack_path):
-            raise FileNotFoundError(f"Secure pack not found: {pack_path}")
-            
+    def verify_kernel_integrity(self, manifest_path: str, base_dir: str) -> bool:
+        """
+        Verifies the SHA-256 integrity of the core files against the signed manifest.
+        If any file is tampered with, it returns False and execution should halt.
+        """
+        if not os.path.exists(manifest_path):
+            logger.error(f"Manifest file not found: {manifest_path}")
+            return False
+
         try:
-            with open(pack_path, "rb") as f:
-                encrypted_data = f.read()
-                
-            # Decrypt payload strictly in memory
-            decrypted_data = self._fernet.decrypt(encrypted_data)
-            
-            # Parse as JSON string without writing back to disk
-            payload = json.loads(decrypted_data.decode("utf-8"))
-            logger.info(f"Successfully decrypted and loaded pack: {os.path.basename(pack_path)}")
-            return payload
-            
+            with open(manifest_path, "r", encoding="utf-8") as f:
+                expected_hashes = json.load(f)
         except Exception as e:
-            logger.error(f"Failed to decrypt secure pack {pack_path}: {e}")
-            raise RuntimeError(f"Cryptographic failure during pack loading: {e}")
+            logger.error(f"Failed to load manifest {manifest_path}: {e}")
+            return False
+            
+        for rel_path, expected_hash in expected_hashes.items():
+            full_path = os.path.join(base_dir, rel_path)
+            
+            if not os.path.exists(full_path):
+                logger.error(f"[CRITICAL KERNEL PANIC] Missing Core File: {rel_path}")
+                return False
+
+            sha256_hash = hashlib.sha256()
+            try:
+                with open(full_path, "rb") as f:
+                    for byte_block in iter(lambda: f.read(4096), b""):
+                        sha256_hash.update(byte_block)
+            except Exception as e:
+                logger.error(f"Could not read {rel_path} for hash verification: {e}")
+                return False
+                    
+            if sha256_hash.hexdigest() != expected_hash:
+                logger.error(f"[CRITICAL KERNEL PANIC] Integrity Breach Detected in: {rel_path}")
+                logger.error("The State-Locked Protocol kernel has been tampered with or modified.")
+                logger.error("Halting all autonomous execution immediately.")
+                return False
+                
+        logger.info("Kernel integrity verified successfully against SHA-256 manifest.")
+        return True
+
+def verify_kernel_integrity(base_dir: str, manifest_path: str) -> tuple[bool, str]:
+    """Module-level helper returning (is_valid, report_str)."""
+    enclave = SecurityEnclave()
+    is_valid = enclave.verify_kernel_integrity(manifest_path, base_dir)
+    return is_valid, "All core files matched manifest SHA-256 signatures." if is_valid else "Manifest mismatch detected."

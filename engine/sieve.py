@@ -7,7 +7,8 @@ import struct
 import base64
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(r"C:\Users\adebo\.gemini\antigravity\scratch\DianaWorkspace", ".env"))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # --- CONFIGURATION INVARIANTS ---
 TOTP_SECRET = os.environ.get("HOMER_TOTP_SECRET", "KYTIN_DEFAULT_SECRET_KEY_CHANGE_ME")
@@ -15,10 +16,10 @@ TOTP_INTERVAL = 30  # Standard 30-second TOTP window
 
 # Protected paths requiring TOTP challenge for ANY access (read or write)
 PROTECTED_PATHS = [
-    r"C:\Windows",
-    r"C:\Program Files",
-    r"C:\Users\adebo\.gemini\antigravity\scratch\DianaWorkspace\Inventions",
-    r"C:\Users\adebo\.gemini\antigravity\scratch\DianaWorkspace\Reflections",
+    "/etc",
+    "/usr",
+    os.path.join(BASE_DIR, "inventions"),
+    os.path.join(BASE_DIR, "reflections"),
 ]
 
 def _generate_totp(secret: str, time_step: int = None) -> str:
@@ -106,18 +107,60 @@ if __name__ == "__main__":
     print(f"[*] Current TOTP: {_generate_totp(TOTP_SECRET)}")
 
     # Test 1: Unprotected path (should pass freely)
-    result = evaluate_command("cat file.txt", r"C:\Users\adebo\.gemini\antigravity\scratch\DianaWorkspace\skills\diana_core\test.py")
+    result = evaluate_command("cat file.txt", os.path.join(BASE_DIR, "skills", "diana_core", "test.py"))
     print(f"[TEST 1] Unprotected path: {result}")
 
     # Test 2: Protected Inventions path without token (should challenge)
-    result = evaluate_command("read genesis.json", r"C:\Users\adebo\.gemini\antigravity\scratch\DianaWorkspace\Inventions\genesis_geometries_001.json")
+    result = evaluate_command("read genesis.json", os.path.join(BASE_DIR, "inventions", "genesis_geometries_001.json"))
     print(f"[TEST 2] Protected read (no token): {result}")
 
     # Test 3: Protected Reflections path without token (should challenge)
-    result = evaluate_command("read deflections.log", r"C:\Users\adebo\.gemini\antigravity\scratch\DianaWorkspace\Reflections\deflections.log")
+    result = evaluate_command("read deflections.log", os.path.join(BASE_DIR, "reflections", "deflections.log"))
     print(f"[TEST 3] Protected read (no token): {result}")
 
     # Test 4: Protected path with valid TOTP
     valid_token = _generate_totp(TOTP_SECRET)
-    result = evaluate_command("read genesis.json", r"C:\Users\adebo\.gemini\antigravity\scratch\DianaWorkspace\Inventions\genesis_geometries_001.json", valid_token)
+    result = evaluate_command("read genesis.json", os.path.join(BASE_DIR, "inventions", "genesis_geometries_001.json"), valid_token)
     print(f"[TEST 4] Protected read (valid TOTP): {result}")
+
+# --- DUAL-POSSESSION AST SIEVE ---
+def verify_pope_sensors(physical_payload: dict, expected_value: str) -> dict:
+    """
+    Mock cryptographic handler for Proof of Physical Execution (PoPE).
+    Evaluates both the optical/kinematic sensor payload and its signature.
+    """
+    signature = physical_payload.get("crypto_signature", "")
+    if not signature.startswith("PoPE_"):
+        return {"status": "PHYSICAL_SLIP_DETECTED", "value": "INVALID_SIGNATURE", "safe_coordinates": [0,0,0]}
+        
+    sensor_value = physical_payload.get("sensor_reality", "")
+    
+    if sensor_value == expected_value:
+        return {"status": "CONFIRMED", "value": sensor_value, "safe_coordinates": physical_payload.get("coords")}
+    else:
+        return {"status": "PHYSICAL_SLIP_DETECTED", "value": sensor_value, "safe_coordinates": physical_payload.get("coords")}
+
+def execute_ast_sieve(physical_pope: dict, digital_api_result: dict, digital_db_state: dict) -> dict:
+    """
+    The deterministic State-Reconciliation Sieve.
+    If physical sensor reality disagrees with digital software state, physical telemetry ALWAYS overrides.
+    """
+    ground_truth = verify_pope_sensors(physical_pope, expected_value=digital_db_state.get("value"))
+    
+    if ground_truth["status"] == "CONFIRMED" and digital_api_result.get("status") == "SUCCESS":
+        return {
+            "authorized": True,
+            "action": "commit_transaction",
+            "reason": "STATE LOCKED: Dual possession verified across Kytin Swarm Runtime."
+        }
+    elif ground_truth["status"] == "PHYSICAL_SLIP_DETECTED" or ground_truth["value"] != digital_db_state.get("value"):
+        return {
+            "authorized": False,
+            "action": "hardware_recovery_rollback",
+            "reason": "PREVENTED_AGENTIC_DEATH_SPIRAL: State mismatch detected. Initiating hardware recovery.",
+            "recovery_data": {
+                "hold_coordinates": ground_truth.get("safe_coordinates"),
+                "true_state": ground_truth.get("value")
+            }
+        }
+    return {"authorized": False, "action": "unknown", "reason": "Unhandled Sieve condition."}

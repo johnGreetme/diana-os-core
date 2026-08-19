@@ -1,0 +1,20 @@
+[Unit]
+Description=DIANA OS Telemetry Dashboard (diana_desktop_launcher)
+After=graphical.target network.target
+Wants=graphical.target
+
+[Service]
+Type=simple
+User=diana
+WorkingDirectory=/opt/kytin/diana
+ExecStart=/usr/bin/python3 /opt/kytin/diana/diana_desktop_launcher.py
+Restart=always
+RestartSec=5
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/diana/.Xauthority
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+StandardOutput=append:/var/log/diana/telemetry.log
+StandardError=append:/var/log/diana/telemetry-error.log
+
+[Install]
+WantedBy=graphical.target

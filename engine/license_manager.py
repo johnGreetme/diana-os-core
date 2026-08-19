@@ -13,7 +13,7 @@ LOCK_FILE_PATH = "/etc/diana/diana_hardware.lock"
 class LicenseManager:
     def __init__(self, tier="hacker"):
         self.tier = tier.upper()
-        self.server_url = os.environ.get("LICENSE_SERVER_URL", "https://api.kytin.io/v1/activate")
+        self.server_url = os.environ.get("LICENSE_SERVER_URL", "https://api.dianaprotocol.io/v1/activate")
 
     def _get_hardware_uuid(self) -> str:
         """Fingerprints the host machine, preferencing NVIDIA GPU UUID."""

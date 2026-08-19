@@ -16,7 +16,9 @@ dependencies = [
     "requests",
     "python-telegram-bot",
     "cryptography",
-    "pydantic"
+    "pydantic",
+    "z3-solver",
+    "pymodbus"
 ]
 
 [tool.nuitka]

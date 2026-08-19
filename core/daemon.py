@@ -389,6 +389,45 @@ async def execute_due_scheduled_tasks(context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logging.error(f"[SCHEDULER] Scheduled task executor error: {e}")
 
+async def daily_3am_cron(context: ContextTypes.DEFAULT_TYPE):
+    uptime_sec = time.time() - psutil.boot_time()
+    days, rem = divmod(uptime_sec, 86400)
+    hours, rem = divmod(rem, 3600)
+    mins, _ = divmod(rem, 60)
+    uptime_str = f"{int(days)}d {int(hours)}h {int(mins)}m" if days > 0 else f"{int(hours)}h {int(mins)}m"
+    
+    msg = f"🌙 *D.I.A.N.A. Nightly Cron (3:00 AM)*\nHost Uptime: {uptime_str}\nStatus: Autonomous Wakeup"
+    
+    try:
+        await context.bot.send_message(chat_id=ADMIN_ID, text=msg, parse_mode="Markdown")
+        logging.info("[CRON] 3 AM Nightly status sent.")
+        
+        vram_stat = get_vram_usage()
+        sieve_log = get_recent_sieve_failures()
+        
+        grounded_prompt = f"""NIGHTLY CRON TICK (3:00 AM). You have just woken up autonomously for your nightly maintenance. 
+[SYSTEM TELEMETRY]:
+VRAM Allocation: {vram_stat} MB
+Host Uptime: {uptime_str}
+
+[RECENT AST SIEVE FAILURES (LAST 20 LINES)]:
+{sieve_log}
+
+Perform your nightly maintenance routine. Review any logic failures, verify your temporal ledger, and summarize the state of the host system. Surprise me with an insight or action based on this real data. Do not hallucinate data."""
+
+        from skills.diana_core.diana_mediator import handle_tool_call
+        response_payload = handle_tool_call(grounded_prompt)
+        
+        if isinstance(response_payload, dict) or isinstance(response_payload, list):
+            output_str = json.dumps(response_payload, indent=2)
+        else:
+            output_str = str(response_payload)
+        
+        await context.bot.send_message(chat_id=ADMIN_ID, text=f"🧠 *Nightly Maintenance Synthesis:*\n{output_str}", parse_mode="Markdown")
+
+    except Exception as e:
+        logging.error(f"[CRON] Failed to execute 3 AM cron: {e}")
+
 # 7. Initialize Asynchronous Long-Polling Loop
 if __name__ == "__main__":
     logging.info("[+] Launching Kytin OpenClaw Telegram Gateway Daemon...")
@@ -404,6 +443,10 @@ if __name__ == "__main__":
     
     # Schedule Heartbeats and Temporal Task Executor
     if app.job_queue:
+        import datetime
+        # Daily 3 AM Nightly Cron
+        app.job_queue.run_daily(daily_3am_cron, time=datetime.time(hour=3, minute=0, second=0))
+        
         # Send Telegram heartbeat every 12 hours
         app.job_queue.run_repeating(send_telegram_heartbeat, interval=43200, first=10)
         # Write to log every 10 minutes
