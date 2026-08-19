@@ -93,8 +93,7 @@ For a deep dive into our architecture, benchmarking, and third-party audits, vis
 ## 🏢 Enterprise & Commercial Use
 
 **D.I.A.N.A. OS Core** is open-source (Apache 2.0) and highly capable. 
-
-For critical infrastructure, heavy manufacturing, and defense contractors requiring **certified releases, compliance reporting (ISO 27001, IEC 62443), Fleet Management, and 24/7 SLA Support**, please explore [D.I.A.N.A. OS Architect Edition](https://dianaprotocol.io/enterprise).
+For critical infrastructure, heavy manufacturing, and defense contractors requiring certified releases, compliance reporting (ISO 27001, IEC 62443), Fleet Management, and 24/7 SLA Support, please explore the [D.I.A.N.A. OS Enterprise Edition](https://www.dianaprotocol.io/#pricing).
 
 ---
 
