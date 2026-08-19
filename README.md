@@ -9,7 +9,7 @@
 
 **AI has progressed from generating words to executing actions. Actions require verification.**
 
-D.I.A.N.A. (Deterministic Inference • Agent Neuro-symbolics & Architecture) is a foundational safety layer for autonomous AI agents. By routing LLM intents through Microsoft's **Z3 SMT Solver** and strict **Pydantic Pydantic Chain-of-Thought (CoT)** schemas, D.I.A.N.A. mathematically proves that an agent's proposed action is safe *before* it reaches physical hardware, SCADA systems, or critical APIs.
+D.I.A.N.A. (Deterministic Inference • Agent Neuro-symbolics & Architecture) is a foundational safety layer for autonomous AI agents. By routing LLM intents through Microsoft's **Z3 SMT Solver** and strict **Pydantic Chain-of-Thought (CoT)** schemas, D.I.A.N.A. mathematically proves that an agent's proposed action is safe *before* it reaches physical hardware, SCADA systems, or critical APIs.
 
 Stop trusting AI. Start proving it.
 
