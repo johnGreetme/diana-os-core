@@ -29,7 +29,7 @@ For major changes (e.g., adding a new backend solver, changing the Pydantic CoT 
 ### 3. Reporting Vulnerabilities (Responsible Disclosure)
 If you find a way to bypass the Z3 Crucible, hallucinate past the Pydantic schema, or inject unsafe runtime parameters:
 * **DO NOT open a public GitHub issue.** 
-* Email the technical details directly to `security@dianaprotocol.io`.
+* Email the technical details directly to `support@dianaprotocol.io`.
 * We take safety-critical disclosures extremely seriously and will coordinate a patched release with you.
 
 ---
