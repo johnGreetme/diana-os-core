@@ -84,9 +84,9 @@ We believe in engineering transparency, not marketing magic.
 ## 📖 Documentation & Evidence
 
 For a deep dive into our architecture, benchmarking, and third-party audits, visit the **Evidence & Trust Center**:
-* [Adversarial Testing Logs](docs/evidence/adversarial_logs.md)
-* [Q3 Performance Benchmarks (0.42ms Latency)](docs/evidence/benchmarks.md)
-* [Authoring Deterministic DSL Axioms](docs/DSL_AUTHORING.md)
+* [Adversarial Testing Logs](https://www.dianaprotocol.io/evidence#known-limitations)
+* [Q3 Performance Benchmarks (0.42ms Latency)](https://www.dianaprotocol.io/evidence#known-limitations)
+* [Authoring Deterministic DSL Axioms](https://www.dianaprotocol.io/documentation/axioms)
 
 ---
 
