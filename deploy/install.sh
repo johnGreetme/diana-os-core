@@ -42,18 +42,27 @@ Environment="OLLAMA_FLASH_ATTENTION=1"
 Environment="OLLAMA_GPU_OVERHEAD=0"
 EOF
 
-# 3. OpenClaw Workspace Scaffolding (Two-Loop Architecture)
-echo "[+] Scaffolding OpenClaw workspace directories..."
+# 3. OpenClaw Workspace Scaffolding (Two-Loop Architecture & 2.0 Isolation)
+echo "[+] Scaffolding OpenClaw 1.x legacy and 2.0 workspace directories..."
+# Legacy 1.x workspace (immutable physical invariant historian)
 mkdir -p ~/.openclaw/workspace/skills/auto-skill-generator/
 mkdir -p ~/.openclaw/workspace/draft_skills/
 mkdir -p ~/.openclaw/workspace/reflections/
+
+# OpenClaw 2.0 isolated storage and workspace
+mkdir -p ~/.openclaw/v2/workspace/skills/auto-skill-generator/
+mkdir -p ~/.openclaw/v2/workspace/draft_skills/
+mkdir -p ~/.openclaw/v2/workspace/quarantine/
+mkdir -p ~/.openclaw/v2/workspace/reflections/
+
 sudo mkdir -p /var/log/diana
 sudo chown "$CURRENT_USER":"$CURRENT_USER" /var/log/diana
 
-# Copy the Auto-Skill Generator Meta-Skill into the OpenClaw workspace
+# Copy the Auto-Skill Generator Meta-Skill into the OpenClaw workspaces
 if [ -f "$APP_DIR/skills/auto-skill-generator/SKILL.md" ]; then
     cp "$APP_DIR/skills/auto-skill-generator/SKILL.md" ~/.openclaw/workspace/skills/auto-skill-generator/SKILL.md
-    echo "[✓] Auto-Skill Generator Meta-Skill installed."
+    cp "$APP_DIR/skills/auto-skill-generator/SKILL.md" ~/.openclaw/v2/workspace/skills/auto-skill-generator/SKILL.md
+    echo "[✓] Auto-Skill Generator Meta-Skill installed in 1.x and 2.0 workspaces."
 fi
 
 # 4. Python Dependencies (core + dashboard telemetry)

@@ -40,6 +40,15 @@ def parse_deterministic_dsl(raw_string: str) -> dict:
             if "sieve AST_State_Reconciliation" not in raw_string:
                 return {"status": "SYNTAX_FAULT", "error": "Fatal: Dual-possession transaction detected without the mandatory 'sieve AST_State_Reconciliation' block. Un-sieved physical execution is strictly prohibited."}
 
+        # 3. OpenClaw 2.0 Multiplayer Presence Header Extraction
+        presence_matches = re.findall(r"@presence\s*\(\s*node_id\s*=\s*\"([^\"]+)\"\s*,\s*role\s*=\s*\"([^\"]+)\"\s*\)", raw_string)
+        collaborators = [
+            {"node_id": m[0], "role": m[1]} for m in presence_matches
+        ]
+
+        session_match = re.search(r"@session\s*\(\s*id\s*=\s*\"([^\"]+)\"\s*\)", raw_string)
+        session_id = session_match.group(1) if session_match else None
+
         # Count explicit axiom / geometry declarations in textual Resin scripts.
         textual_count = len(re.findall(r"\b(?:axiom|geometry)\s+\w+", raw_string, flags=re.IGNORECASE))
         if textual_count > MAX_AXIOMS:
@@ -48,9 +57,18 @@ def parse_deterministic_dsl(raw_string: str) -> dict:
                 "error": f"Axiom limit exceeded: {textual_count} > MAX_AXIOMS ({MAX_AXIOMS}).",
             }
                 
+        compiled_payload = {
+            "type": "deterministic_dsl_compiled",
+            "raw_script": raw_string,
+            "openclaw_v2": {
+                "session_id": session_id,
+                "collaborators": collaborators,
+                "multiplayer_active": len(collaborators) > 0
+            }
+        }
         return {
             "status": "SUCCESS",
-            "payload": {"type": "deterministic_dsl_compiled", "raw_script": raw_string}
+            "payload": compiled_payload
         }
 
     # Fallback to legacy JSON evaluation

@@ -47,7 +47,7 @@ from engine.schemas import (
 )
 from engine.logic_engine import GREETME_50, verify_semantic_atoms
 from engine.sieve import evaluate_command as sieve_evaluate_command
-from core.historian import historian
+from core.historian import historian, openclaw_v2_historian
 from core.skill_loader import skill_loader
 from core.skill_forge import skill_forge
 
@@ -521,6 +521,7 @@ def handle_tool_call(query_text: str) -> str:
                     # Formal Z3 Verification
                     is_safe, proof_report = verify_invariants(target_state, live_scada_state)
                     historian.log_crucible_eval("scada", scada_action.model_dump(), live_scada_state, target_state, is_safe, proof_report.get("z3_result", ""), breach_report=str(proof_report))
+                    openclaw_v2_historian.log_v2_crucible_eval("session_scada_live", "scada", scada_action.model_dump(), live_scada_state, target_state, is_safe, proof_report.get("z3_result", ""), breach_report=str(proof_report))
 
                     if is_safe and router.modbus_driver:
                         print("[Z3 CRUCIBLE] SATISFIABLE (SAFE) - Committing to Modbus PLC...")
@@ -532,8 +533,17 @@ def handle_tool_call(query_text: str) -> str:
                         execution_log += f"\n[SCADA Modbus Execution]: {msg} -> State: {target_state}\n"
                     else:
                         print("[Z3 CRUCIBLE] UNSATISFIABLE - Execution Blocked by Invariants!")
+                        # Capture Divergent Tail into OpenClaw 2.0 SQLite Non-Repudiation Ledger
+                        tail_record = openclaw_v2_historian.log_divergent_tail(
+                            session_id="session_scada_live",
+                            node_id="forager_node_01",
+                            fault_type="KINETIC_INVARIANT_BREACH",
+                            divergent_state=live_scada_state,
+                            candidate_action=scada_action.model_dump(),
+                            z3_proof_report=proof_report
+                        )
                         historian.log_actuation("scada", target_state, "UNSAT_BLOCKED", str(proof_report))
-                        execution_log += f"\n[SCADA Z3 INVARIANT VIOLATION]: Action BLOCKED: {proof_report.get('status')}\n"
+                        execution_log += f"\n[SCADA Z3 INVARIANT VIOLATION]: Action BLOCKED: {proof_report.get('status')} | Receipt: {tail_record.get('non_repudiation_hash')[:16]}...\n"
 
                 # D. GUI Workstation Automation (Read-Before-Write)
                 if click_matches:

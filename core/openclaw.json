@@ -1,6 +1,30 @@
 {
-  "orchestration_engine": "Kytin OpenClaw",
-  "version": "1.4.2",
+  "orchestration_engine": "OpenClaw 2.0",
+  "version": "2.0.0",
+  "release_tag": "v2026.8.1",
+  "storage": {
+    "backend": "sqlite",
+    "sessions_db_path": "~/.openclaw/v2/sessions.db",
+    "legacy_historian_db": "ledger/historian.db",
+    "legacy_flat_log": "reflections/historian.log",
+    "journal_mode": "WAL",
+    "busy_timeout_ms": 5000
+  },
+  "workspace": {
+    "version": "2.0",
+    "root": "~/.openclaw/v2/workspace",
+    "quarantine_dir": "~/.openclaw/v2/workspace/quarantine",
+    "draft_skills_dir": "~/.openclaw/v2/workspace/draft_skills",
+    "skills_dir": "~/.openclaw/v2/workspace/skills",
+    "collaborative_presence": true,
+    "state_locked_protocol": true
+  },
+  "multiplayer": {
+    "enabled": true,
+    "presence_timeout_sec": 30,
+    "concurrency_lock": "WAL_IMMEDIATE",
+    "divergent_tail_tracking": true
+  },
   "ollama_runtime": {
     "version": "0.33.2",
     "endpoint": "http://127.0.0.1:11434",
@@ -17,7 +41,7 @@
   },
   "model_tag": "llama3.3:latest",
   "fallback_model_tag": "deepseek-r1:14b",
-  "primary_system_prompt": "You are D.I.A.N.A. OS (Deterministic Intermediate Axiomatic Neural Architecture), a sovereign neuro-symbolic execution engine. All kinetic actions must be deterministic, bounded, and verified against the Z3 SMT Crucible.",
+  "primary_system_prompt": "You are D.I.A.N.A. OS running on OpenClaw 2.0 (v2026.8.1). All state mutations, multi-agent collaborations, and kinetic actuation commands must be deterministic and verified against the Z3 SMT Crucible. Invariant violations are permanently recorded in the non-repudiation Divergent Tail ledger.",
   "telegram_gateway": {
     "bot_token": "KYTIN_MOCK_TOKEN",
     "admin_allowlist_id": 0
