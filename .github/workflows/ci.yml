@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ master, main ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ master, main ]
 
@@ -28,12 +29,12 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y tesseract-ocr libgl1-mesa-glx libglib2.0-0
+          sudo apt-get install -y tesseract-ocr libgl1 libglib2.0-0
 
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          pip install z3-solver pydantic pymodbus httpx qdrant-client psutil python-dotenv pytest pytest-cov
+          pip install -r requirements.txt
 
       - name: Run Test Suite
         run: |
