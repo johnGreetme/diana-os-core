@@ -66,7 +66,15 @@ def retrieve_relevant_geometries(query_text: str, domain_filter: str = None, top
     try:
         resp = httpx.post(
             OLLAMA_EMBEDDINGS_URL,
-            json={"model": EMBEDDING_MODEL, "prompt": query_text},
+            json={
+                "model": EMBEDDING_MODEL,
+                "prompt": query_text,
+                "options": {
+                    "num_gpu": 99,
+                    "num_thread": 4,
+                    "low_vram": False
+                }
+            },
             timeout=10.0
         )
         embedding = resp.json().get("embedding")

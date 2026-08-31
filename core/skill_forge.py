@@ -62,6 +62,23 @@ class SkillForge:
                 f"Edge VRAM protection engaged. Halting forge cycle."
             )
 
+    def _load_options(self) -> dict:
+        """Reads hardware acceleration options from openclaw.json."""
+        default_opts = {
+            "num_gpu": 99,
+            "num_thread": 4,
+            "low_vram": False,
+            "f16_kv": True,
+            "main_gpu": 0
+        }
+        try:
+            with open(os.path.join(BASE_DIR, "openclaw.json"), "r") as f:
+                return json.load(f).get("ollama_runtime", {}).get(
+                    "hardware_acceleration", {}
+                ).get("options", default_opts)
+        except Exception:
+            return default_opts
+
     def _call_local_llm(self, system_prompt: str, user_prompt: str) -> str:
         """Calls local DeepSeek/Llama LLM via Ollama API.
 
@@ -70,11 +87,18 @@ class SkillForge:
         self._check_budget()
         self._llm_call_count += 1
         tag = self._load_model_tag()
+        options = self._load_options()
 
         try:
             response = requests.post(
                 "http://127.0.0.1:11434/api/generate",
-                json={"model": tag, "system": system_prompt, "prompt": user_prompt, "stream": False},
+                json={
+                    "model": tag,
+                    "system": system_prompt,
+                    "prompt": user_prompt,
+                    "options": options,
+                    "stream": False
+                },
                 timeout=120
             )
             if response.status_code == 200:

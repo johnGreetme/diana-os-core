@@ -14,8 +14,11 @@ from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, fil
 # Add diana_core to sys.path so we can import skills correctly
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from dotenv import load_dotenv
-load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except ImportError:
+    pass
 
 # Import TOTP logic
 from skills.diana_core import secure_evaluator

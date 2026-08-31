@@ -1,0 +1,29 @@
+{
+  "orchestration_engine": "Kytin OpenClaw",
+  "version": "1.4.2",
+  "ollama_runtime": {
+    "version": "0.33.2",
+    "endpoint": "http://127.0.0.1:11434",
+    "hardware_acceleration": {
+      "target_silicon": "NVIDIA RTX GPU",
+      "options": {
+        "num_gpu": 99,
+        "num_thread": 4,
+        "low_vram": false,
+        "f16_kv": true,
+        "main_gpu": 0
+      }
+    }
+  },
+  "model_tag": "llama3.3:latest",
+  "fallback_model_tag": "deepseek-r1:14b",
+  "primary_system_prompt": "You are D.I.A.N.A. OS (Deterministic Intermediate Axiomatic Neural Architecture), a sovereign neuro-symbolic execution engine. All kinetic actions must be deterministic, bounded, and verified against the Z3 SMT Crucible.",
+  "telegram_gateway": {
+    "bot_token": "KYTIN_MOCK_TOKEN",
+    "admin_allowlist_id": 0
+  },
+  "domains": {
+    "active": "digital",
+    "supported": ["scada", "robotics", "digital"]
+  }
+}

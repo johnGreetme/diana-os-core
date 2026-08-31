@@ -4,9 +4,16 @@ import subprocess
 import sqlite3
 import json
 import requests
-import google.generativeai as genai
-from datetime import datetime
-from dotenv import load_dotenv
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv(path=None):
+        pass
 
 # Load local environment variables securely
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,8 +21,11 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Setup Gemini SDK
 gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-if gemini_key:
-    genai.configure(api_key=gemini_key)
+if gemini_key and genai:
+    try:
+        genai.configure(api_key=gemini_key)
+    except Exception:
+        pass
 
 # Append paths so tools and engine are cleanly resolved
 sys.path.append(os.path.join(BASE_DIR, "tools"))
@@ -71,13 +81,25 @@ if router.is_scada:
 from parsers.optic import OpticParser
 optic_parser = OpticParser(model_name="moondream")
 
-# Read model_tag from config
+DEFAULT_OLLAMA_OPTIONS = {
+    "num_gpu": 99,
+    "num_thread": 4,
+    "low_vram": False,
+    "f16_kv": True,
+    "main_gpu": 0
+}
+
+# Read model_tag and hardware acceleration options from config
 try:
     with open(os.path.join(BASE_DIR, "openclaw.json"), "r") as f:
         config = json.load(f)
-        LOCAL_MODEL_TAG = config.get("model_tag", "deepseek-r1:14b")
+        LOCAL_MODEL_TAG = config.get("model_tag", "llama3.3:latest")
+        OLLAMA_OPTIONS = config.get("ollama_runtime", {}).get(
+            "hardware_acceleration", {}
+        ).get("options", DEFAULT_OLLAMA_OPTIONS)
 except Exception:
-    LOCAL_MODEL_TAG = "deepseek-r1:14b"
+    LOCAL_MODEL_TAG = "llama3.3:latest"
+    OLLAMA_OPTIONS = DEFAULT_OLLAMA_OPTIONS
 
 import re
 
@@ -169,6 +191,7 @@ def _triage_local_deepseek(prompt: str, geometries: list, escalation_enabled: bo
             "model": LOCAL_MODEL_TAG,
             "system": system_prompt,
             "prompt": full_prompt,
+            "options": OLLAMA_OPTIONS,
             "stream": False
         }, timeout=120)
         if response.status_code == 200:
@@ -183,8 +206,8 @@ def _triage_local_deepseek(prompt: str, geometries: list, escalation_enabled: bo
 
 def _escalate_to_gemini(prompt: str, geometries: list) -> str:
     """Escalate complex requests to Gemini API with full geometries."""
-    if not gemini_key:
-        return "⚠️ Gemini API key not found in environment (GEMINI_API_KEY / GOOGLE_API_KEY). Cloud escalation failed."
+    if not gemini_key or genai is None:
+        return "⚠️ Gemini API key not found or google-generativeai SDK missing. Cloud escalation failed."
     
     context_str = json.dumps(geometries, indent=2)
     full_prompt = f"Context:\n{context_str}\n\nUser Prompt: {prompt}\n\nPlease analyze this comprehensively. Execute commands via <execute>command</execute> or Modbus deltas via <modbus_delta pressure_delta=\"+10\" toggle_valve_a=\"true\" />."

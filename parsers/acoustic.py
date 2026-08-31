@@ -1,6 +1,10 @@
 import os
 import logging
-from faster_whisper import WhisperModel
+
+try:
+    from faster_whisper import WhisperModel
+except ImportError:
+    WhisperModel = None
 
 logger = logging.getLogger(__name__)
 
@@ -9,9 +13,13 @@ class AcousticParser:
         self.model_size = os.environ.get("FASTER_WHISPER_MODEL", "base")
         self.device = "cuda"
         self.compute_type = os.environ.get("FASTER_WHISPER_COMPUTE", "int8")
-        self._init_model()
+        self.model = None
+        if WhisperModel is not None:
+            self._init_model()
 
     def _init_model(self):
+        if WhisperModel is None:
+            return
         logger.info(f"Initializing acoustic parser on {self.device.upper()} ({self.compute_type})...")
         self.model = WhisperModel(
             self.model_size,

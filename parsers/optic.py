@@ -1,11 +1,27 @@
 import io
 import os
-import cv2
-import mss
 import logging
 import asyncio
-from PIL import Image
-import ollama
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+try:
+    import mss
+except ImportError:
+    mss = None
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
+try:
+    import ollama
+except ImportError:
+    ollama = None
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +76,11 @@ class OpticParser:
                     model=self.model_name,
                     prompt=prompt,
                     images=[image_bytes],
+                    options={
+                        "num_gpu": 99,
+                        "num_thread": 4,
+                        "low_vram": False
+                    },
                     keep_alive="3m"  # Unload from VRAM after 3 mins
                 )
             

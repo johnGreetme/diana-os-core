@@ -27,9 +27,20 @@ echo "[+] Installing System Dependencies..."
 sudo apt-get update
 sudo apt-get install -y python3-pip python3-gi gir1.2-webkit2-4.0 xvfb curl
 
-# 2. Ollama Native Auto-Boot
-echo "[+] Installing Ollama Native Engine..."
-curl -fsSL https://ollama.com/install.sh | sh
+# 2. Ollama Native Auto-Boot (Pinned v0.33.2 with RTX GPU Layer Offloading)
+echo "[+] Installing Ollama Native Engine (v0.33.2)..."
+OLLAMA_VERSION="0.33.2"
+curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION="$OLLAMA_VERSION" sh
+
+# Configure Ollama Systemd override for GPU layer offload & CPU reservation for Z3 SMT
+sudo mkdir -p /etc/systemd/system/ollama.service.d/
+cat << EOF | sudo tee /etc/systemd/system/ollama.service.d/override.conf > /dev/null
+[Service]
+Environment="CUDA_VISIBLE_DEVICES=0"
+Environment="OLLAMA_NUM_PARALLEL=1"
+Environment="OLLAMA_FLASH_ATTENTION=1"
+Environment="OLLAMA_GPU_OVERHEAD=0"
+EOF
 
 # 3. OpenClaw Workspace Scaffolding (Two-Loop Architecture)
 echo "[+] Scaffolding OpenClaw workspace directories..."
